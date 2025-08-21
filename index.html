@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pastel Image Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F8FBFF;
+      --card: #FFFFFF;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --primary: #A5C3FF;
+      --primary-ink: #0f172a;
+      --accent: #FFC1CC;
+      --mint: #B9FBC0;
+      --peach: #FFD6A5;
+      --rose: #F5E6E8;
+      --ring: rgba(31, 41, 55, .2);
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(120deg, var(--bg), #f6f7ff 60%);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .title {
+      font-size: clamp(20px, 4vw, 34px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--card);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 0 0 1px var(--ring) inset;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px)
+    }
+
+    .btn:active {
+      transform: translateY(0)
+    }
+
+    .btn.active {
+      background: var(--primary)
+    }
+
+    .btn.chip-nature {
+      background: var(--mint)
+    }
+
+    .btn.chip-people {
+      background: var(--rose)
+    }
+
+    .btn.chip-city {
+      background: var(--primary)
+    }
+
+    .btn.chip-food {
+      background: var(--peach)
+    }
+
+    .search {
+      flex: 1 1 240px;
+      display: flex;
+      align-items: center;
+      background: var(--card);
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, .04), 0 0 0 1px var(--ring) inset;
+    }
+
+    .search input {
+      border: 0;
+      outline: none;
+      width: 100%;
+      font-size: 14px;
+      background: transparent;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--card);
+      box-shadow: 0 10px 30px rgba(31, 41, 55, .06);
+    }
+
+    .thumb {
+      display: block;
+      width: 100%;
+      height: 0;
+      padding-bottom: 66.66%;
+      background-size: cover;
+      background-position: center;
+      transition: transform .35s ease;
+    }
+
+    .card:hover .thumb {
+      transform: scale(1.05)
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, .35), rgba(0, 0, 0, .0));
+      opacity: .0;
+      transition: opacity .3s ease;
+    }
+
+    .card:hover .overlay {
+      opacity: 1
+    }
+
+    .badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .85);
+      backdrop-filter: blur(4px);
+    }
+
+    .caption {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+    }
+
+    .caption .name {
+      font-size: 14px
+    }
+
+    .caption .open {
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .9);
+      color: #111827;
+      font-size: 12px;
+    }
+
+    .hide {
+      display: none
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, .7);
+      backdrop-filter: blur(2px);
+      z-index: 50
+    }
+
+    .lightbox.show {
+      display: flex
+    }
+
+    .lightbox-inner {
+      position: relative;
+      max-width: 92vw;
+      max-height: 86vh;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .lightbox img {
+      max-width: 82vw;
+      max-height: 82vh;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+      opacity: 0;
+      transform: scale(.98);
+      transition: opacity .25s ease, transform .25s ease
+    }
+
+    .lightbox.show img {
+      opacity: 1;
+      transform: scale(1)
+    }
+
+    .lightbox .nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .9);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+      cursor: pointer;
+      border: 0
+    }
+
+    .lightbox .prev {
+      left: -52px
+    }
+
+    .lightbox .next {
+      right: -52px
+    }
+
+    .lightbox .close {
+      position: absolute;
+      top: -52px;
+      right: 0;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 0;
+      background: rgba(255, 255, 255, .95);
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .2)
+    }
+
+    @media (max-width:700px) {
+      .lightbox .prev {
+        left: 6px
+      }
+
+      .lightbox .next {
+        right: 6px
+      }
+
+      .lightbox .close {
+        top: 6px
+      }
+    }
+
+    .footer {
+      margin-top: 26px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .footer .hint {
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    .filterbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">Pastel Gallery</div>
+      <div class="controls">
+        <div class="filterbar">
+          <button class="btn active" data-filter="all">All</button>
+          <button class="btn chip-nature" data-filter="nature">Nature</button>
+          <button class="btn chip-city" data-filter="city">City</button>
+          <button class="btn chip-people" data-filter="people">People</button>
+          <button class="btn chip-food" data-filter="food">Food</button>
+        </div>
+        <div class="search"><input id="searchInput" type="text" placeholder="Search captions..." /></div>
+      </div>
+    </div>
+
+    <div id="gallery" class="grid">
+      <div class="card" data-category="nature" data-name="Forest Trail">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">Nature</span>
+          <span class="caption"><span class="name">Forest Trail</span><span class="open">View</span></span>
+        </a>
+      </div>
+      <div class="card" data-category="city" data-name="Evening Skyline">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1499346030926-9a72daac6c63?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1499346030926-9a72daac6c63?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">City</span>
+          <span class="caption"><span class="name">Evening Skyline</span><span class="open">View</span></span>
+        </a>
+      </div>
+      <div class="card" data-category="people" data-name="Smiling Portrait">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">People</span>
+          <span class="caption"><span class="name">Smiling Portrait</span><span class="open">View</span></span>
+        </a>
+      </div>
+      <div class="card" data-category="food" data-name="Pancake Stack">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1478145046317-39f10e56b5e9?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1478145046317-39f10e56b5e9?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">Food</span>
+          <span class="caption"><span class="name">Pancake Stack</span><span class="open">View</span></span>
+        </a>
+      </div>
+      <div class="card" data-category="nature" data-name="Coastal Cliffs">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1493558103817-58b2924bce98?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1493558103817-58b2924bce98?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">Nature</span>
+          <span class="caption"><span class="name">Coastal Cliffs</span><span class="open">View</span></span>
+        </a>
+      </div>
+      <div class="card" data-category="city" data-name="Old Street">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">City</span>
+          <span class="caption"><span class="name">Old Street</span><span class="open">View</span></span>
+        </a>
+      </div>
+      <div class="card" data-category="people" data-name="Friends Laughing">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">People</span>
+          <span class="caption"><span class="name">Friends Laughing</span><span class="open">View</span></span>
+        </a>
+      </div>
+      <div class="card" data-category="food" data-name="Berry Bowl">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1466637574441-749b8f19452f?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1466637574441-749b8f19452f?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">Food</span>
+          <span class="caption"><span class="name">Berry Bowl</span><span class="open">View</span></span>
+        </a>
+      </div>
+      <div class="card" data-category="nature" data-name="Snowy Peaks">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1508264165352-258a6c5a5338?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1508264165352-258a6c5a5338?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">Nature</span>
+          <span class="caption"><span class="name">Snowy Peaks</span><span class="open">View</span></span>
+        </a>
+      </div>
+      <div class="card" data-category="city" data-name="Neon Alley">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">City</span>
+          <span class="caption"><span class="name">Neon Alley</span><span class="open">View</span></span>
+        </a>
+      </div>
+      <div class="card" data-category="people" data-name="Street Dancer">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1467703834117-04386e3dadd8?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1467703834117-04386e3dadd8?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">People</span>
+          <span class="caption"><span class="name">Street Dancer</span><span class="open">View</span></span>
+        </a>
+      </div>
+      <div class="card" data-category="food" data-name="Pastel Macarons">
+        <a href="#" class="open"
+          data-full="https://images.unsplash.com/photo-1486427944299-d1955d23e34d?q=80&w=2000&auto=format&fit=crop">
+          <span class="thumb"
+            style="background-image:url('https://images.unsplash.com/photo-1486427944299-d1955d23e34d?q=80&w=800&auto=format&fit=crop');"></span>
+          <span class="overlay"></span>
+          <span class="badge">Food</span>
+          <span class="caption"><span class="name">Pastel Macarons</span><span class="open">View</span></span>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span class="hint">Tip: Click an image to open the lightbox. Use arrow keys or on-screen buttons to navigate.
+        Press Esc to close.</span>
+    </div>
+  </div>
+
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <div class="lightbox-inner">
+      <button class="nav prev" aria-label="Previous">&#10094;</button>
+      <img id="lightboxImg" src="" alt="" />
+      <button class="nav next" aria-label="Next">&#10095;</button>
+      <button class="close" aria-label="Close">&#10005;</button>
+    </div>
+  </div>
+
+  <script>
+    const gallery = document.getElementById('gallery');
+    const cards = [...gallery.querySelectorAll('.card')];
+    const filterButtons = [...document.querySelectorAll('[data-filter]')];
+    const searchInput = document.getElementById('searchInput');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const prevBtn = lightbox.querySelector('.prev');
+    const nextBtn = lightbox.querySelector('.next');
+    const closeBtn = lightbox.querySelector('.close');
+    let activeIndex = 0;
+    let visibleCards = [...cards];
+    function applyFilter(category) {
+      filterButtons.forEach(b => b.classList.toggle('active', b.dataset.filter === category));
+      visibleCards = [];
+      cards.forEach(card => {
+        const matchCat = category === 'all' || card.dataset.category === category;
+        const term = searchInput.value.trim().toLowerCase();
+        const matchText = !term || card.dataset.name.toLowerCase().includes(term);
+        const show = matchCat && matchText;
+        card.classList.toggle('hide', !show);
+        if (show) visibleCards.push(card);
+      });
+    }
+    filterButtons.forEach(btn => btn.addEventListener('click', () => applyFilter(btn.dataset.filter)));
+    searchInput.addEventListener('input', () => {
+      const active = filterButtons.find(b => b.classList.contains('active'))?.dataset.filter || 'all';
+      applyFilter(active);
+    });
+    function openLightbox(index) {
+      if (!visibleCards.length) return;
+      activeIndex = ((index % visibleCards.length) + visibleCards.length) % visibleCards.length;
+      const a = visibleCards[activeIndex].querySelector('a.open');
+      const src = a.getAttribute('data-full');
+      const alt = visibleCards[activeIndex].dataset.name || '';
+      lightboxImg.style.opacity = 0;
+      lightboxImg.src = src;
+      lightboxImg.alt = alt;
+      lightbox.classList.add('show');
+      lightbox.setAttribute('aria-hidden', 'false');
+    }
+    function closeLightbox() {
+      lightbox.classList.remove('show');
+      lightbox.setAttribute('aria-hidden', 'true');
+    }
+    function next() { openLightbox(activeIndex + 1) }
+    function prev() { openLightbox(activeIndex - 1) }
+    nextBtn.addEventListener('click', next);
+    prevBtn.addEventListener('click', prev);
+    closeBtn.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox() });
+    document.addEventListener('keydown', e => {
+      if (!lightbox.classList.contains('show')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') next();
+      if (e.key === 'ArrowLeft') prev();
+    });
+    gallery.addEventListener('click', e => {
+      const open = e.target.closest('a.open');
+      if (!open) return;
+      e.preventDefault();
+      const card = e.target.closest('.card');
+      visibleCards = [...gallery.querySelectorAll('.card:not(.hide)')];
+      const idx = visibleCards.indexOf(card);
+      openLightbox(idx);
+    });
+    window.addEventListener('load', () => applyFilter('all'));
+  </script>
+</body>
+
+</html>
